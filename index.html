@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Gallery</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID'); // Replace GA_MEASUREMENT_ID with actual Google Analytics ID
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 80px;
+            animation: fadeInDown 1s ease-out;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #ffffff;
+            border: 2px solid #1a1a1a;
+            border-radius: 50px;
+            padding: 16px 40px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: #1a1a1a;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: #1a1a1a;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+            z-index: 0;
+        }
+        
+        .btn:hover::before {
+            width: 300%;
+            height: 300%;
+        }
+        
+        .btn span {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease 0.1s;
+        }
+        
+        .btn:hover span {
+            color: #ffffff;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Welcome Text */
+        .welcome {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 42px;
+            font-weight: 300;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            animation: fadeIn 1.2s ease-out 0.3s both;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #666;
+            animation: fadeIn 1.2s ease-out 0.5s both;
+        }
+        
+        /* Gallery - Overlapping Cards */
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            perspective: 1000px;
+        }
+        
+        .gallery-belt {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 500px;
+        }
+        
+        .gallery-item {
+            position: absolute;
+            width: 400px;
+            height: 500px;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeIn 0.8s ease-out both;
+            left: 50%;
+            top: 50%;
+            transform-origin: center center;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: box-shadow 0.4s ease;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        
+        .gallery-item:hover img {
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Position items in a fan/spread */
+        .gallery-item.active {
+            z-index: 100;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+        
+        .gallery-item.left-far {
+            z-index: 1;
+            transform: translate(-180%, -50%) scale(0.75) rotate(-12deg);
+            opacity: 0.4;
+        }
+        
+        .gallery-item.left-near {
+            z-index: 50;
+            transform: translate(-115%, -50%) scale(0.85) rotate(-6deg);
+            opacity: 0.7;
+        }
+        
+        .gallery-item.right-near {
+            z-index: 50;
+            transform: translate(15%, -50%) scale(0.85) rotate(6deg);
+            opacity: 0.7;
+        }
+        
+        .gallery-item.right-far {
+            z-index: 1;
+            transform: translate(80%, -50%) scale(0.75) rotate(12deg);
+            opacity: 0.4;
+        }
+        
+        /* Hide items that are too far */
+        .gallery-item.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.5);
+        }
+        
+        /* Modal/Popup */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #1a1a1a;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-close:hover {
+            background: #1a1a1a;
+            transform: rotate(90deg);
+        }
+        
+        .modal-close::before,
+        .modal-close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 2px;
+            background: #1a1a1a;
+            transition: background 0.3s ease;
+        }
+        
+        .modal-close:hover::before,
+        .modal-close:hover::after {
+            background: #ffffff;
+        }
+        
+        .modal-close::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        
+        .modal-close::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #1a1a1a;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-nav:hover {
+            background: #1a1a1a;
+        }
+        
+        .modal-nav.prev {
+            left: 40px;
+        }
+        
+        .modal-nav.next {
+            right: 40px;
+        }
+        
+        .modal-nav::after {
+            content: '';
+            width: 15px;
+            height: 15px;
+            border-right: 2px solid #1a1a1a;
+            border-top: 2px solid #1a1a1a;
+            transition: border-color 0.3s ease;
+        }
+        
+        .modal-nav:hover::after {
+            border-color: #ffffff;
+        }
+        
+        .modal-nav.prev::after {
+            transform: rotate(-135deg);
+            margin-left: 5px;
+        }
+        
+        .modal-nav.next::after {
+            transform: rotate(45deg);
+            margin-right: 5px;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome {
+                font-size: 32px;
+            }
+            
+            .gallery-item {
+                width: 300px;
+                height: 400px;
+            }
+            
+            .gallery-item.left-far {
+                transform: translate(-160%, -50%) scale(0.65) rotate(-10deg);
+            }
+            
+            .gallery-item.left-near {
+                transform: translate(-105%, -50%) scale(0.8) rotate(-5deg);
+            }
+            
+            .gallery-item.right-near {
+                transform: translate(5%, -50%) scale(0.8) rotate(5deg);
+            }
+            
+            .gallery-item.right-far {
+                transform: translate(60%, -50%) scale(0.65) rotate(10deg);
+            }
+            
+            .modal-close {
+                top: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .modal-nav {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .modal-nav.prev {
+                left: 20px;
+            }
+            
+            .modal-nav.next {
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="buttons">
+                <button class="btn" id="contactBtn">
+                    <span>Get My Contacts</span>
+                </button>
+                <a href="https://ko-fi.com/YOUR_USERNAME" target="_blank" class="btn">
+                    <span>Visit My Ko-fi</span>
+                </a>
+            </div>
+            
+            <h1 class="welcome">Welcome to my art gallery</h1>
+            <p class="subtitle">My Pics • My Tattoo Concepts</p>
+        </div>
+        
+        <div class="gallery-container">
+            <div class="gallery-belt" id="galleryBelt">
+                <!-- Images will be loaded from the pics folder -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for image popup -->
+    <div class="modal" id="modal">
+        <div class="modal-close" id="modalClose"></div>
+        <div class="modal-nav prev" id="modalPrev"></div>
+        <div class="modal-nav next" id="modalNext"></div>
+        <div class="modal-content">
+            <img src="" alt="Gallery Image" id="modalImage">
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">Email copied to clipboard!</div>
+    
+    <script>
+        // Configuration - REPLACE THESE WITH YOUR INFO
+        const GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME';  // Replace with GitHub username
+        const REPO_NAME = 'YOUR_REPO_NAME';              // Replace with repository name
+        const BRANCH = 'main';                            // Usually 'main' or 'master'
+        
+        let images = [];
+        const galleryBelt = document.getElementById('galleryBelt');
+        
+        // Automatically load all images from pics folder
+        async function loadImages() {
+            try {
+                // Fetch file list from GitHub API
+                const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/pics?ref=${BRANCH}`;
+                const response = await fetch(apiUrl);
+                const files = await response.json();
+                
+                // Filter for image files and sort alphabetically
+                const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+                images = files
+                    .filter(file => {
+                        const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+                        return imageExtensions.includes(ext);
+                    })
+                    .map(file => `pics/${file.name}`)
+                    .sort(); // Alphabetical order
+                
+                // Display images in gallery with overlapping card navigation
+                let currentIndex = 0;
+                
+                images.forEach((src, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    item.innerHTML = `<img src="${src}" alt="Gallery Image ${index + 1}">`;
+                    item.dataset.index = index;
+                    
+                    // Click to bring to center and open modal on double-click
+                    let clickTimeout;
+                    item.addEventListener('click', (e) => {
+                        clearTimeout(clickTimeout);
+                        clickTimeout = setTimeout(() => {
+                            // Single click - bring to center
+                            if (index !== currentIndex) {
+                                currentIndex = index;
+                                updateGalleryPositions();
+                            }
+                        }, 200);
+                    });
+                    
+                    item.addEventListener('dblclick', (e) => {
+                        clearTimeout(clickTimeout);
+                        // Double click - open modal
+                        openModal(index);
+                    });
+                    
+                    galleryBelt.appendChild(item);
+                });
+                
+                // Position cards based on current index
+                function updateGalleryPositions() {
+                    const items = document.querySelectorAll('.gallery-item');
+                    items.forEach((item, index) => {
+                        const position = index - currentIndex;
+                        
+                        // Remove all position classes
+                        item.className = 'gallery-item';
+                        
+                        // Add appropriate class based on position
+                        if (position === 0) {
+                            item.classList.add('active');
+                        } else if (position === -1) {
+                            item.classList.add('left-near');
+                        } else if (position === -2) {
+                            item.classList.add('left-far');
+                        } else if (position === 1) {
+                            item.classList.add('right-near');
+                        } else if (position === 2) {
+                            item.classList.add('right-far');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                }
+                
+                // Initialize positions
+                updateGalleryPositions();
+                
+                // Keyboard navigation for gallery
+                document.addEventListener('keydown', (e) => {
+                    if (modal.classList.contains('active')) return;
+                    
+                    if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                        currentIndex--;
+                        updateGalleryPositions();
+                    }
+                    if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+                        currentIndex++;
+                        updateGalleryPositions();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading images:', error);
+                // Fallback: show message if API fails
+                galleryBelt.innerHTML = '<p style="text-align: center; width: 100%; padding: 40px; color: #666;">Please update GITHUB_USERNAME and REPO_NAME in the code, then add images to the pics folder.</p>';
+            }
+        }
+        
+        // Load images when page loads
+        loadImages();
+        
+        // Modal functionality
+        const modal = document.getElementById('modal');
+        const modalImage = document.getElementById('modalImage');
+        const modalClose = document.getElementById('modalClose');
+        const modalPrev = document.getElementById('modalPrev');
+        const modalNext = document.getElementById('modalNext');
+        let currentImageIndex = 0;
+        
+        function openModal(index) {
+            currentImageIndex = index;
+            modalImage.src = images[index];
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function showPrevImage() {
+            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+            modalImage.src = images[currentImageIndex];
+        }
+        
+        function showNextImage() {
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            modalImage.src = images[currentImageIndex];
+        }
+        
+        modalClose.addEventListener('click', closeModal);
+        modalPrev.addEventListener('click', showPrevImage);
+        modalNext.addEventListener('click', showNextImage);
+        
+        // Close modal on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft') showPrevImage();
+            if (e.key === 'ArrowRight') showNextImage();
+        });
+        
+        // Touch swipe for modal
+        let modalTouchStartX = 0;
+        let modalTouchEndX = 0;
+        
+        modal.addEventListener('touchstart', (e) => {
+            modalTouchStartX = e.changedTouches[0].screenX;
+        });
+        
+        modal.addEventListener('touchend', (e) => {
+            modalTouchEndX = e.changedTouches[0].screenX;
+            handleModalSwipe();
+        });
+        
+        function handleModalSwipe() {
+            if (modalTouchStartX - modalTouchEndX > 50) showNextImage();
+            if (modalTouchEndX - modalTouchStartX > 50) showPrevImage();
+        }
+        
+        // Copy email to clipboard
+        const contactBtn = document.getElementById('contactBtn');
+        const notification = document.getElementById('notification');
+        
+        contactBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText('her_art@google.com');
+                showNotification();
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        });
+        
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
