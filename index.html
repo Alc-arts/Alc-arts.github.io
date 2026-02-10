@@ -32,6 +32,9 @@
             padding: 0;
             height: 100vh;
             width: 100vw;
+            position: fixed;
+            touch-action: pan-y pinch-zoom;
+            overscroll-behavior: none;
         }
         
         .container {
@@ -39,6 +42,7 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         
         /* Header Section - Top 60% */
@@ -229,6 +233,9 @@
             justify-content: center;
             backdrop-filter: blur(10px);
             animation: fadeIn 0.3s ease;
+            overflow: hidden;
+            touch-action: none;
+            overscroll-behavior: none;
         }
         
         .modal.active {
@@ -240,6 +247,8 @@
             max-width: 90vw;
             max-height: 90vh;
             animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: none;
+            overflow: hidden;
         }
         
         .modal-content img {
@@ -248,6 +257,10 @@
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            touch-action: none;
         }
         
         .modal-close {
@@ -476,7 +489,6 @@
             
             <h1 class="welcome">Welcome to my art gallery</h1>
             <p class="subtitle">My Pics • My Tattoo Concepts</p>
-            <p class="navigation">(Hold and move left right to move, hold move up/down to view)</p>
         </div>
         
         <div class="gallery-container">
@@ -572,16 +584,21 @@
                 let touchEndX = 0;
                 let touchEndY = 0;
                 
-                galleryBelt.addEventListener('touchstart', handleTouchStart, false);
-                galleryBelt.addEventListener('touchend', handleTouchEnd, false);
+                galleryBelt.addEventListener('touchstart', handleTouchStart, { passive: false });
+                galleryBelt.addEventListener('touchmove', (e) => {
+                    e.preventDefault(); // Prevent scrolling while swiping
+                }, { passive: false });
+                galleryBelt.addEventListener('touchend', handleTouchEnd, { passive: false });
                 galleryBelt.addEventListener('mousedown', handleMouseStart, false);
                 
                 function handleTouchStart(e) {
+                    e.preventDefault();
                     touchStartX = e.changedTouches[0].screenX;
                     touchStartY = e.changedTouches[0].screenY;
                 }
                 
                 function handleTouchEnd(e) {
+                    e.preventDefault();
                     touchEndX = e.changedTouches[0].screenX;
                     touchEndY = e.changedTouches[0].screenY;
                     handleGesture();
@@ -671,11 +688,15 @@
             modalImage.src = images[index];
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
         }
         
         function closeModal() {
             modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
         }
         
         function showPrevImage() {
@@ -713,15 +734,21 @@
         let modalTouchEndY = 0;
         
         modal.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling
             modalTouchStartX = e.changedTouches[0].screenX;
             modalTouchStartY = e.changedTouches[0].screenY;
-        });
+        }, { passive: false });
+        
+        modal.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling while swiping
+        }, { passive: false });
         
         modal.addEventListener('touchend', (e) => {
+            e.preventDefault(); // Prevent scrolling
             modalTouchEndX = e.changedTouches[0].screenX;
             modalTouchEndY = e.changedTouches[0].screenY;
             handleModalGesture();
-        });
+        }, { passive: false });
         
         modal.addEventListener('mousedown', (e) => {
             modalTouchStartX = e.screenX;
