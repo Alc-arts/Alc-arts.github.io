@@ -27,19 +27,28 @@
             background: #ffffff;
             font-family: 'Montserrat', sans-serif;
             color: #1a1a1a;
-            overflow-x: hidden;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
         }
         
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 60px 20px;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
         }
         
-        /* Header Section */
+        /* Header Section - Top 60% */
         .header {
-            text-align: center;
-            margin-bottom: 80px;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
             animation: fadeInDown 1s ease-out;
         }
         
@@ -47,7 +56,7 @@
             display: flex;
             gap: 20px;
             justify-content: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             flex-wrap: wrap;
         }
         
@@ -109,8 +118,9 @@
             font-size: 42px;
             font-weight: 300;
             line-height: 1.4;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             animation: fadeIn 1.2s ease-out 0.3s both;
+            text-align: center;
         }
         
         .subtitle {
@@ -120,37 +130,37 @@
             text-transform: uppercase;
             color: #666;
             animation: fadeIn 1.2s ease-out 0.5s both;
+            text-align: center;
         }
         
-        /* Gallery - Overlapping Cards */
+        /* Gallery - Overlapping Cards - Bottom 40% */
         .gallery-container {
             position: relative;
-            width: 100%;
-            min-height: 500px;
+            height: 40vh;
+            width: 100vw;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 80px 20px;
             perspective: 1000px;
         }
         
         .gallery-belt {
             position: relative;
             width: 100%;
-            max-width: 600px;
-            height: 500px;
+            height: 100%;
         }
         
         .gallery-item {
             position: absolute;
-            width: 400px;
-            height: 500px;
+            width: 280px;
+            height: 350px;
             cursor: pointer;
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeIn 0.8s ease-out both;
             left: 50%;
             top: 50%;
             transform-origin: center center;
+            touch-action: none;
         }
         
         .gallery-item img {
@@ -406,28 +416,37 @@
         /* Responsive */
         @media (max-width: 768px) {
             .welcome {
-                font-size: 32px;
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 13px;
+            }
+            
+            .btn {
+                padding: 14px 32px;
+                font-size: 12px;
             }
             
             .gallery-item {
-                width: 300px;
-                height: 400px;
+                width: 220px;
+                height: 280px;
             }
             
             .gallery-item.left-far {
-                transform: translate(-160%, -50%) scale(0.65) rotate(-10deg);
+                transform: translate(-140%, -50%) scale(0.6) rotate(-10deg);
             }
             
             .gallery-item.left-near {
-                transform: translate(-105%, -50%) scale(0.8) rotate(-5deg);
+                transform: translate(-95%, -50%) scale(0.75) rotate(-5deg);
             }
             
             .gallery-item.right-near {
-                transform: translate(5%, -50%) scale(0.8) rotate(5deg);
+                transform: translate(-5%, -50%) scale(0.75) rotate(5deg);
             }
             
             .gallery-item.right-far {
-                transform: translate(60%, -50%) scale(0.65) rotate(10deg);
+                transform: translate(40%, -50%) scale(0.6) rotate(10deg);
             }
             
             .modal-close {
@@ -438,16 +457,7 @@
             }
             
             .modal-nav {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .modal-nav.prev {
-                left: 20px;
-            }
-            
-            .modal-nav.next {
-                right: 20px;
+                display: none; /* Hide prev/next on mobile, use swipe */
             }
         }
     </style>
@@ -515,7 +525,7 @@
                     .map(file => `pics/${file.name}`)
                     .sort(); // Alphabetical order
                 
-                // Display images in gallery with overlapping card navigation
+                // Display images in gallery with swipe gesture navigation
                 let currentIndex = 0;
                 
                 images.forEach((src, index) => {
@@ -523,26 +533,6 @@
                     item.className = 'gallery-item';
                     item.innerHTML = `<img src="${src}" alt="Gallery Image ${index + 1}">`;
                     item.dataset.index = index;
-                    
-                    // Click to bring to center and open modal on double-click
-                    let clickTimeout;
-                    item.addEventListener('click', (e) => {
-                        clearTimeout(clickTimeout);
-                        clickTimeout = setTimeout(() => {
-                            // Single click - bring to center
-                            if (index !== currentIndex) {
-                                currentIndex = index;
-                                updateGalleryPositions();
-                            }
-                        }, 200);
-                    });
-                    
-                    item.addEventListener('dblclick', (e) => {
-                        clearTimeout(clickTimeout);
-                        // Double click - open modal
-                        openModal(index);
-                    });
-                    
                     galleryBelt.appendChild(item);
                 });
                 
@@ -575,6 +565,71 @@
                 // Initialize positions
                 updateGalleryPositions();
                 
+                // Swipe/Drag gesture handling for gallery
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchEndX = 0;
+                let touchEndY = 0;
+                
+                galleryBelt.addEventListener('touchstart', handleTouchStart, false);
+                galleryBelt.addEventListener('touchend', handleTouchEnd, false);
+                galleryBelt.addEventListener('mousedown', handleMouseStart, false);
+                
+                function handleTouchStart(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }
+                
+                function handleTouchEnd(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleGesture();
+                }
+                
+                function handleMouseStart(e) {
+                    touchStartX = e.screenX;
+                    touchStartY = e.screenY;
+                    
+                    function handleMouseMove(e) {
+                        touchEndX = e.screenX;
+                        touchEndY = e.screenY;
+                    }
+                    
+                    function handleMouseEnd(e) {
+                        handleGesture();
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseEnd);
+                    }
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseEnd);
+                }
+                
+                function handleGesture() {
+                    const diffX = touchEndX - touchStartX;
+                    const diffY = touchEndY - touchStartY;
+                    
+                    // Determine if swipe is more horizontal or vertical
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        // Horizontal swipe - navigate gallery
+                        if (diffX > 50 && currentIndex > 0) {
+                            // Swipe right - go to previous image
+                            currentIndex--;
+                            updateGalleryPositions();
+                        } else if (diffX < -50 && currentIndex < images.length - 1) {
+                            // Swipe left - go to next image
+                            currentIndex++;
+                            updateGalleryPositions();
+                        }
+                    } else {
+                        // Vertical swipe
+                        if (diffY < -50) {
+                            // Swipe up - open fullscreen
+                            openModal(currentIndex);
+                        }
+                    }
+                }
+                
                 // Keyboard navigation for gallery
                 document.addEventListener('keydown', (e) => {
                     if (modal.classList.contains('active')) return;
@@ -586,6 +641,9 @@
                     if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
                         currentIndex++;
                         updateGalleryPositions();
+                    }
+                    if (e.key === 'ArrowUp' || e.key === ' ') {
+                        openModal(currentIndex);
                     }
                 });
                 
@@ -638,31 +696,67 @@
             if (e.target === modal) closeModal();
         });
         
-        // Keyboard navigation
+        // Keyboard navigation for modal
         document.addEventListener('keydown', (e) => {
             if (!modal.classList.contains('active')) return;
             
-            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape' || e.key === 'ArrowDown') closeModal();
             if (e.key === 'ArrowLeft') showPrevImage();
             if (e.key === 'ArrowRight') showNextImage();
         });
         
-        // Touch swipe for modal
+        // Touch/Mouse swipe for modal
         let modalTouchStartX = 0;
+        let modalTouchStartY = 0;
         let modalTouchEndX = 0;
+        let modalTouchEndY = 0;
         
         modal.addEventListener('touchstart', (e) => {
             modalTouchStartX = e.changedTouches[0].screenX;
+            modalTouchStartY = e.changedTouches[0].screenY;
         });
         
         modal.addEventListener('touchend', (e) => {
             modalTouchEndX = e.changedTouches[0].screenX;
-            handleModalSwipe();
+            modalTouchEndY = e.changedTouches[0].screenY;
+            handleModalGesture();
         });
         
-        function handleModalSwipe() {
-            if (modalTouchStartX - modalTouchEndX > 50) showNextImage();
-            if (modalTouchEndX - modalTouchStartX > 50) showPrevImage();
+        modal.addEventListener('mousedown', (e) => {
+            modalTouchStartX = e.screenX;
+            modalTouchStartY = e.screenY;
+            
+            function handleModalMouseMove(e) {
+                modalTouchEndX = e.screenX;
+                modalTouchEndY = e.screenY;
+            }
+            
+            function handleModalMouseEnd(e) {
+                handleModalGesture();
+                document.removeEventListener('mousemove', handleModalMouseMove);
+                document.removeEventListener('mouseup', handleModalMouseEnd);
+            }
+            
+            document.addEventListener('mousemove', handleModalMouseMove);
+            document.addEventListener('mouseup', handleModalMouseEnd);
+        });
+        
+        function handleModalGesture() {
+            const diffX = modalTouchEndX - modalTouchStartX;
+            const diffY = modalTouchEndY - modalTouchStartY;
+            
+            // Determine if swipe is more horizontal or vertical
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // Horizontal swipe - navigate images
+                if (diffX < -50) showNextImage(); // Swipe left
+                if (diffX > 50) showPrevImage();   // Swipe right
+            } else {
+                // Vertical swipe
+                if (diffY > 50) {
+                    // Swipe down - close modal
+                    closeModal();
+                }
+            }
         }
         
         // Copy email to clipboard
