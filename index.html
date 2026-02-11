@@ -15,7 +15,7 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400&family=Indie+Flower&display=swap');
         
         * {
             margin: 0;
@@ -24,7 +24,8 @@
         }
         
         body {
-            background: #ffffff;
+            background: #ffffff url('cat.svg') repeat;
+            background-size: auto 10vh;
             font-family: 'Montserrat', sans-serif;
             color: #1a1a1a;
             overflow: hidden;
@@ -45,15 +46,18 @@
             overflow: hidden;
         }
         
-        /* Header Section - Top 60% */
+        /* Header Section - Top 20% */
         .header {
-            height: 40vh;
+            height: 20vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px 20px;
             animation: fadeInDown 1s ease-out;
+            background: #ffffff;
+            position: relative;
+            z-index: 10;
         }
         
         .buttons {
@@ -81,6 +85,36 @@
             color: #1a1a1a;
             text-decoration: none;
             display: inline-block;
+        }
+        
+        /* Ink animation - always playing */
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: inkDrop 3s ease-in-out infinite;
+            z-index: 0;
+        }
+        
+        @keyframes inkDrop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
         }
         
         .btn::before {
@@ -118,46 +152,30 @@
         
         /* Welcome Text */
         .welcome {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 42px;
-            font-weight: 300;
-            line-height: 1.4;
-            margin-bottom: 15px;
+            font-family: 'Indie Flower', cursive;
+            font-size: 48px;
+            font-weight: 400;
+            line-height: 1.2;
+            margin: 0;
             animation: fadeIn 1.2s ease-out 0.3s both;
             text-align: center;
+            color: #000000;
         }
         
         .subtitle {
-            font-size: 16px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #666;
-            animation: fadeIn 1.2s ease-out 0.5s both;
-            text-align: center;
+            display: none; /* Hidden to save space */
         }
 
-                /* Navigation Instructions Image */
+        /* Navigation Instructions Image */
         .nav-instructions {
-            max-width: 100px;
-            width: 100%;
-            margin: 20px auto 0;
-            opacity: 0.5;
-            animation: fadeIn 1.4s ease-out 0.7s both;
-        }
-        
-        .nav-instructions img {
-            width: 100%;
-            height: auto;
-            display: block;
+            display: none; /* Hidden to save space */
         }
 
         
-        /* Gallery - Overlapping Cards - Bottom 40% */
+        /* Gallery - Overlapping Cards - Middle 70% */
         .gallery-container {
             position: relative;
-            height: 55vh;
-            padding-top: 5vh;
+            height: 70vh;
             width: 100vw;
             display: flex;
             align-items: center;
@@ -236,6 +254,31 @@
             transform: translate(-50%, -50%) scale(0.5);
         }
         
+        /* Hint animation - bounce up and down on active item */
+        .gallery-item.active.hint {
+            animation: hintBounce 1.5s ease-in-out;
+        }
+        
+        @keyframes hintBounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            25% { transform: translate(-50%, -55%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            75% { transform: translate(-50%, -55%) scale(1) rotate(0deg); }
+        }
+        
+        /* Footer - Bottom 10% with buttons */
+        .footer {
+            height: 10vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 20px;
+            background: #ffffff;
+            position: relative;
+            z-index: 10;
+        }
+        
         /* Modal/Popup */
         .modal {
             display: none;
@@ -264,8 +307,8 @@
             max-width: 90vw;
             max-height: 90vh;
             animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            touch-action: none;
-            overflow: hidden;
+            touch-action: pinch-zoom; /* Allow pinch-to-zoom */
+            overflow: visible;
         }
         
         .modal-content img {
@@ -274,108 +317,11 @@
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
-            pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
-            touch-action: none;
+            touch-action: pinch-zoom; /* Allow pinch-to-zoom on image */
         }
         
-        .modal-close {
-            position: absolute;
-            top: 40px;
-            right: 40px;
-            width: 50px;
-            height: 50px;
-            border: 2px solid #1a1a1a;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            cursor: pointer;
-            z-index: 1001;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .modal-close:hover {
-            background: #1a1a1a;
-            transform: rotate(90deg);
-        }
-        
-        .modal-close::before,
-        .modal-close::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 2px;
-            background: #1a1a1a;
-            transition: background 0.3s ease;
-        }
-        
-        .modal-close:hover::before,
-        .modal-close:hover::after {
-            background: #ffffff;
-        }
-        
-        .modal-close::before {
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-        
-        .modal-close::after {
-            transform: translate(-50%, -50%) rotate(-45deg);
-        }
-        
-        .modal-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid #1a1a1a;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .modal-nav:hover {
-            background: #1a1a1a;
-        }
-        
-        .modal-nav.prev {
-            left: 40px;
-        }
-        
-        .modal-nav.next {
-            right: 40px;
-        }
-        
-        .modal-nav::after {
-            content: '';
-            width: 15px;
-            height: 15px;
-            border-right: 2px solid #1a1a1a;
-            border-top: 2px solid #1a1a1a;
-            transition: border-color 0.3s ease;
-        }
-        
-        .modal-nav:hover::after {
-            border-color: #ffffff;
-        }
-        
-        .modal-nav.prev::after {
-            transform: rotate(-135deg);
-            margin-left: 5px;
-        }
-        
-        .modal-nav.next::after {
-            transform: rotate(45deg);
-            margin-right: 5px;
-        }
         
         /* Notification */
         .notification {
@@ -495,23 +441,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="buttons">
-                <button class="btn" id="contactBtn">
-                    <span>Get My Contacts</span>
-                </button>
-                <a href="https://ko-fi.com/YOUR_USERNAME" target="_blank" class="btn">
-                    <span>Visit My Ko-fi</span>
-                </a>
-            </div>
-            
-            <h1 class="welcome">Welcome to my art gallery</h1>
-            <p class="subtitle">My Pics • My Tattoo Concepts</p>
-
-            <!-- Navigation Instructions -->
-            <div class="nav-instructions">
-                <img src="navigate.png" alt="Swipe to navigate">
-            </div>
-            
+            <h1 class="welcome">Welcome to Camelia's Art</h1>
         </div>
         
         <div class="gallery-container">
@@ -519,13 +449,19 @@
                 <!-- Images will be loaded from the pics folder -->
             </div>
         </div>
+        
+        <div class="footer">
+            <button class="btn" id="contactBtn">
+                <span>Get My Contacts</span>
+            </button>
+            <a href="https://ko-fi.com/YOUR_USERNAME" target="_blank" class="btn">
+                <span>Visit My Ko-fi</span>
+            </a>
+        </div>
     </div>
     
     <!-- Modal for image popup -->
     <div class="modal" id="modal">
-        <div class="modal-close" id="modalClose"></div>
-        <div class="modal-nav prev" id="modalPrev"></div>
-        <div class="modal-nav next" id="modalNext"></div>
         <div class="modal-content">
             <img src="" alt="Gallery Image" id="modalImage">
         </div>
@@ -657,10 +593,12 @@
                             // Swipe right - go to previous image
                             currentIndex--;
                             updateGalleryPositions();
+                            triggerHintAnimation(); // Show hint after navigation
                         } else if (diffX < -50 && currentIndex < images.length - 1) {
                             // Swipe left - go to next image
                             currentIndex++;
                             updateGalleryPositions();
+                            triggerHintAnimation(); // Show hint after navigation
                         }
                     } else {
                         // Vertical swipe
@@ -671,6 +609,30 @@
                     }
                 }
                 
+                // Trigger hint animation on active item
+                function triggerHintAnimation() {
+                    const activeItem = document.querySelector('.gallery-item.active');
+                    if (activeItem) {
+                        activeItem.classList.add('hint');
+                        setTimeout(() => {
+                            activeItem.classList.remove('hint');
+                        }, 1500);
+                    }
+                }
+                
+                // Double-tap detection for opening full view
+                let lastTapTime = 0;
+                galleryBelt.addEventListener('touchend', (e) => {
+                    const currentTime = new Date().getTime();
+                    const tapGap = currentTime - lastTapTime;
+                    
+                    if (tapGap < 300 && tapGap > 0) {
+                        // Double tap detected
+                        openModal(currentIndex);
+                    }
+                    lastTapTime = currentTime;
+                }, { passive: true });
+                
                 // Keyboard navigation for gallery
                 document.addEventListener('keydown', (e) => {
                     if (modal.classList.contains('active')) return;
@@ -678,10 +640,12 @@
                     if (e.key === 'ArrowLeft' && currentIndex > 0) {
                         currentIndex--;
                         updateGalleryPositions();
+                        triggerHintAnimation();
                     }
                     if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
                         currentIndex++;
                         updateGalleryPositions();
+                        triggerHintAnimation();
                     }
                     if (e.key === 'ArrowUp' || e.key === ' ') {
                         openModal(currentIndex);
@@ -701,9 +665,6 @@
         // Modal functionality
         const modal = document.getElementById('modal');
         const modalImage = document.getElementById('modalImage');
-        const modalClose = document.getElementById('modalClose');
-        const modalPrev = document.getElementById('modalPrev');
-        const modalNext = document.getElementById('modalNext');
         let currentImageIndex = 0;
         
         function openModal(index) {
@@ -731,10 +692,6 @@
             currentImageIndex = (currentImageIndex + 1) % images.length;
             modalImage.src = images[currentImageIndex];
         }
-        
-        modalClose.addEventListener('click', closeModal);
-        modalPrev.addEventListener('click', showPrevImage);
-        modalNext.addEventListener('click', showNextImage);
         
         // Close modal on background click
         modal.addEventListener('click', (e) => {
