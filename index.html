@@ -14,6 +14,42 @@
         gtag('js', new Date());
         gtag('config', 'G-ZG3SHYB270'); // Replace GA_MEASUREMENT_ID with actual Google Analytics ID
     </script>
+
+
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const contactBtnWrapper = document.getElementById("contactBtnWrapper");
+            const contactBtn = document.getElementById("contactBtn");
+            const kofiBtnWrapper = document.getElementById("kofiBtnWrapper");
+            const kofiBtn = document.getElementById("kofiBtn");
+
+            function createDrop(wrapper, button) {
+                const drop = document.createElement("span");
+                drop.className = "drop";
+                
+                // Get button position and size
+                const btnRect = button.getBoundingClientRect();
+                
+                // Random position along button width
+                const randomX = Math.random() * btnRect.width;
+                drop.style.left = randomX + "px";
+                
+                wrapper.appendChild(drop);
+
+                // Remove after animation completes
+                setTimeout(() => {
+                    if (wrapper.contains(drop)) {
+                        wrapper.removeChild(drop);
+                    }
+                }, 2500);
+            }
+
+            // Create tears continuously for both buttons
+            setInterval(() => createDrop(contactBtnWrapper, contactBtn), 400);
+            setInterval(() => createDrop(kofiBtnWrapper, kofiBtn), 400);
+        });
+</script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400&family=Indie+Flower&display=swap');
