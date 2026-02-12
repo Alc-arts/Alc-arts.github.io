@@ -157,6 +157,66 @@
             transform: scale(0.95);
         }
 
+        /* Small music button */
+        .btn-small {
+            background: #ffffff;
+            border: 2px solid #1a1a1a;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-small::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: #1a1a1a;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+            z-index: 0;
+        }
+        
+        .btn-small:hover::before {
+            width: 300%;
+            height: 300%;
+        }
+        
+        .btn-small span {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease 0.1s;
+        }
+        
+        .btn-small:hover span {
+            color: #ffffff;
+        }
+
+        .btn-small:active {
+            transform: scale(0.95);
+        }
+
+        .btn-small.playing {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
         /* Container for tear drops - positioned relative to button wrapper */
         .btn-wrapper {
             position: relative;
@@ -189,6 +249,26 @@
                 transform: translateY(80px) scaleY(0.3); 
                 opacity: 0; 
             }
+        }
+
+        /* Photo counter */
+        .photo-counter {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #1a1a1a;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: #1a1a1a;
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
         }
 
 @font-face {
@@ -511,6 +591,9 @@
                     <span>Visit My Ko-fi</span>
                 </a>
             </div>
+            <button class="btn-small" id="musicBtn">
+                <span>♪</span>
+            </button>
         </div>
     </div>
     
@@ -525,6 +608,26 @@
     <div class="notification" id="notification">Email copied to clipboard!</div>
     
     <script>
+        // Audio for rain sound
+        const rainAudio = new Audio('rain.wav');
+        rainAudio.loop = true;
+
+        // Music button toggle
+        const musicBtn = document.getElementById('musicBtn');
+        let isPlaying = false;
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                rainAudio.pause();
+                musicBtn.classList.remove('playing');
+                isPlaying = false;
+            } else {
+                rainAudio.play();
+                musicBtn.classList.add('playing');
+                isPlaying = true;
+            }
+        });
+
         // Configuration - REPLACE THESE WITH YOUR INFO
         const GITHUB_USERNAME = 'Alc-arts';  // Replace with GitHub username
         const REPO_NAME = 'Alc-arts.github.io';              // Replace with repository name
@@ -565,6 +668,11 @@
                 // Position cards based on current index
                 function updateGalleryPositions() {
                     const items = document.querySelectorAll('.gallery-item');
+                    
+                    // Remove old counter
+                    const oldCounter = document.querySelector('.photo-counter');
+                    if (oldCounter) oldCounter.remove();
+                    
                     items.forEach((item, index) => {
                         const position = index - currentIndex;
                         
@@ -574,6 +682,12 @@
                         // Add appropriate class based on position
                         if (position === 0) {
                             item.classList.add('active');
+                            
+                            // Add photo counter to active item
+                            const counter = document.createElement('div');
+                            counter.className = 'photo-counter';
+                            counter.textContent = `${currentIndex + 1}/${images.length}`;
+                            item.appendChild(counter);
                         } else if (position === -1) {
                             item.classList.add('left-near');
                         } else if (position === -2) {
