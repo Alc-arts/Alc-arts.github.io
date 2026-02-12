@@ -325,7 +325,7 @@
             backdrop-filter: blur(10px);
             animation: fadeIn 0.3s ease;
             overflow: hidden;
-            touch-action: none;
+            touch-action: auto; /* Allow touch actions for pinch-zoom */
             overscroll-behavior: none;
         }
         
@@ -338,7 +338,7 @@
             max-width: 90vw;
             max-height: 90vh;
             animation: scaleIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            touch-action: pinch-zoom; /* Allow pinch-to-zoom */
+            touch-action: auto; /* Allow pinch-to-zoom */
             overflow: visible;
         }
         
@@ -350,7 +350,11 @@
             box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
             user-select: none;
             -webkit-user-drag: none;
-            touch-action: pinch-zoom; /* Allow pinch-to-zoom on image */
+            touch-action: auto; /* Allow pinch-to-zoom on image */
+            pointer-events: auto; /* Allow interaction with image */
+            /* Enable hardware acceleration for smooth zooming */
+            will-change: transform;
+            transform-origin: center center;
         }
         
         
@@ -712,16 +716,28 @@
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
+            // Reset zoom
+            const img = document.getElementById('modalImage');
+            if (img) {
+            img.style.transform = 'scale(1)';
+            currentScale = 1;
+            }
         }
         
         function showPrevImage() {
             currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
             modalImage.src = images[currentImageIndex];
+                        // Reset zoom when changing images
+            modalImage.style.transform = 'scale(1)';
+            currentScale = 1;
         }
         
         function showNextImage() {
             currentImageIndex = (currentImageIndex + 1) % images.length;
             modalImage.src = images[currentImageIndex];
+            // Reset zoom when changing images
+            modalImage.style.transform = 'scale(1)';
+            currentScale = 1;
         }
         
         // Close modal on background click
@@ -745,39 +761,46 @@
         let modalTouchEndY = 0;
         
         modal.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevent scrolling
-            modalTouchStartX = e.changedTouches[0].screenX;
-            modalTouchStartY = e.changedTouches[0].screenY;
-        }, { passive: false });
-        
-        modal.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Prevent scrolling while swiping
-        }, { passive: false });
+            // Only handle single-touch for swipe gestures
+            // Allow multi-touch (pinch) to pass through
+            if (e.touches.length === 1) {
+                modalTouchStartX = e.changedTouches[0].screenX;
+                modalTouchStartY = e.changedTouches[0].screenY;
+            }
+        }, { passive: true });
         
         modal.addEventListener('touchend', (e) => {
-            e.preventDefault(); // Prevent scrolling
-            modalTouchEndX = e.changedTouches[0].screenX;
-            modalTouchEndY = e.changedTouches[0].screenY;
-            handleModalGesture();
-        }, { passive: false });
+            // Only handle single-touch swipe gestures
+            if (e.changedTouches.length === 1 && modalTouchStartX !== 0) {
+                modalTouchEndX = e.changedTouches[0].screenX;
+                modalTouchEndY = e.changedTouches[0].screenY;
+                handleModalGesture();
+                // Reset
+                modalTouchStartX = 0;
+                modalTouchStartY = 0;
+            }
+        }, { passive: true });
         
         modal.addEventListener('mousedown', (e) => {
-            modalTouchStartX = e.screenX;
-            modalTouchStartY = e.screenY;
-            
-            function handleModalMouseMove(e) {
-                modalTouchEndX = e.screenX;
-                modalTouchEndY = e.screenY;
+            // Only handle mouse events on the modal background, not the image
+            if (e.target === modal) {
+                modalTouchStartX = e.screenX;
+                modalTouchStartY = e.screenY;
+                
+                function handleModalMouseMove(e) {
+                    modalTouchEndX = e.screenX;
+                    modalTouchEndY = e.screenY;
+                }
+                
+                function handleModalMouseEnd(e) {
+                    handleModalGesture();
+                    document.removeEventListener('mousemove', handleModalMouseMove);
+                    document.removeEventListener('mouseup', handleModalMouseEnd);
+                }
+                
+                document.addEventListener('mousemove', handleModalMouseMove);
+                document.addEventListener('mouseup', handleModalMouseEnd);
             }
-            
-            function handleModalMouseEnd(e) {
-                handleModalGesture();
-                document.removeEventListener('mousemove', handleModalMouseMove);
-                document.removeEventListener('mouseup', handleModalMouseEnd);
-            }
-            
-            document.addEventListener('mousemove', handleModalMouseMove);
-            document.addEventListener('mouseup', handleModalMouseEnd);
         });
         
         function handleModalGesture() {
@@ -797,6 +820,57 @@
                 }
             }
         }
+        
+        // Pinch-to-zoom implementation
+        let initialDistance = 0;
+        let currentScale = 1;
+        let modalImg = null;
+        
+        modal.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                // Two fingers - pinch gesture
+                e.preventDefault();
+                modalImg = document.getElementById('modalImage');
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+            }
+        }, { passive: false });
+        
+        modal.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && initialDistance > 0) {
+                // Pinching
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                
+                // Calculate scale
+                const scale = currentDistance / initialDistance;
+                currentScale = Math.max(0.5, Math.min(scale, 5)); // Limit scale between 0.5x and 5x
+                
+                if (modalImg) {
+                    modalImg.style.transform = `scale(${currentScale})`;
+                }
+            }
+        }, { passive: false });
+        
+        modal.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialDistance = 0;
+                // Reset scale when zoom ends if scale is close to 1
+                if (modalImg && currentScale > 0.9 && currentScale < 1.1) {
+                    modalImg.style.transform = 'scale(1)';
+                    currentScale = 1;
+                }
+            }
+        }, { passive: true });
         
         // Copy email to clipboard
         const contactBtn = document.getElementById('contactBtn');
