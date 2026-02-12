@@ -97,7 +97,7 @@
             z-index: 10;
         }
         
-        .buttons {
+               .buttons {
             display: flex;
             gap: 20px;
             justify-content: center;
@@ -123,59 +123,6 @@
             text-decoration: none;
             display: inline-block;
         }
-        
-        /* Ink animation - always playing */
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, transparent 70%);
-            border-radius: 50%;
-                top: -10px; /* start above the button */
-            animation: tears 3s ease-in-out infinite;
-            z-index: 0;
-        }
-
-        .btn::after {
-    left: 40%;
-    animation-delay: 0.5s;
-}
-
-.btn::before {
-    left: 70%;
-    animation-delay: 1s;
-}  
-        
-        @keyframes inkDrop {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(2.5);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-        }
-
-
-
-@keyframes tears {
-  0% { transform: translateY(0) scaleY(1); opacity: 1; }
-  50% { transform: translateY(50px) scaleY(1.2); opacity: 0.8; }
-  100% { transform: translateY(100px) scaleY(0.8); opacity: 0; }
-}
-
-
-
-
-
         
         .btn::before {
             content: '';
@@ -208,6 +155,40 @@
         
         .btn:active {
             transform: scale(0.95);
+        }
+
+        /* Container for tear drops - positioned relative to button wrapper */
+        .btn-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Tear drop animation */
+        .drop {
+            position: absolute;
+            top: 0;
+            width: 8px;
+            height: 16px;
+            background: radial-gradient(circle at 50% 30%, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: tears 2.5s linear forwards;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes tears {
+            0% { 
+                transform: translateY(0) scaleY(1); 
+                opacity: 0.8; 
+            }
+            50% { 
+                transform: translateY(40px) scaleY(1.3); 
+                opacity: 0.6; 
+            }
+            100% { 
+                transform: translateY(80px) scaleY(0.3); 
+                opacity: 0; 
+            }
         }
 
 @font-face {
