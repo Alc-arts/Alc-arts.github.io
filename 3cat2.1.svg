@@ -11,7 +11,7 @@
         stroke="#000" stroke-width="4"
         fill="transparent"
         stroke-linecap="round">
-        <animate attributeName="d" dur="0.8s" repeatCount="indefinite"
+        <animate attributeName="d" dur="0.6s" repeatCount="indefinite"
           values="M100 150 C110 155 130 155 140 150;
                   M100 150 C110 152 130 158 140 150;
                   M100 150 C110 155 130 155 140 150"/>
